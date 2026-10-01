@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Retrofit Smart Irrigation Simulator</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#e9eee9;--panel:#f8faf7;--ink:#17332f;--mut:#5d7570;--line:#b9c8c2;--pw:#d98a00;--inf:#1c7ed6;--mech:#2f9e6b;--bad:#d6361f;--warn:#c77700;--ok:#1f8a4c;--water:#3aa7d9;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1b19;--panel:#172725;--ink:#dcebe6;--mut:#8fa9a2;--line:#2c4540;--pw:#f0a92e;--inf:#5aa9f0;--mech:#4fcf94;--bad:#ff6a50;--warn:#f0a92e;--ok:#4fcf94;--water:#5cc0ee}}
+:root[data-theme="dark"]{--bg:#0f1b19;--panel:#172725;--ink:#dcebe6;--mut:#8fa9a2;--line:#2c4540;--pw:#f0a92e;--inf:#5aa9f0;--mech:#4fcf94;--bad:#ff6a50;--warn:#f0a92e;--ok:#4fcf94;--water:#5cc0ee}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 "IBM Plex Sans",system-ui,sans-serif;font-variant-numeric:tabular-nums}
+header{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:2px solid var(--ink)}
+h1{font-size:19px;margin:0;font-weight:600}
+h2{font-size:13px;margin:0 0 8px;font-weight:600;color:var(--mut)}
+.pill{padding:4px 12px;border-radius:99px;font-weight:600;color:#fff;background:var(--ok)}
+.pill.warn{background:var(--warn)}.pill.crit{background:var(--bad)}
+main{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(300px,1fr);gap:16px;padding:16px 20px;max-width:1400px;margin:auto}
+@media(max-width:980px){main{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px}
+svg{width:100%;height:auto;display:block}
+.blk{fill:var(--panel);stroke:var(--ink);stroke-width:1.5}
+svg text{fill:var(--ink);font:11px "IBM Plex Sans",system-ui,sans-serif}
+svg .s{fill:var(--mut);font-size:10px}
+.enc{fill:none;stroke:var(--mut);stroke-width:1.5;stroke-dasharray:8 5}
+.fl{fill:none;stroke-width:3;stroke-dasharray:7 6;animation:d .7s linear infinite}
+.fl.off{animation:none;opacity:.25}
+@keyframes d{to{stroke-dashoffset:-13}}
+.pw{stroke:var(--pw)}.inf{stroke:var(--inf)}.mech{stroke:var(--mech)}.wt{stroke:var(--water)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:8px;color:var(--mut);font-size:12px}
+.legend i{display:inline-block;width:18px;height:4px;vertical-align:middle;margin-right:6px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.kv{border:1px solid var(--line);border-radius:4px;padding:8px;background:var(--bg)}
+.kv b{display:block;font-size:20px;font-weight:600}
+.kv span{color:var(--mut);font-size:12px}
+.bar{height:6px;background:var(--line);border-radius:3px;margin-top:6px;overflow:hidden}.bar div{height:100%;background:var(--mech);transition:width .2s}
+.g{stroke:var(--line);fill:none;stroke-width:9}.gv{fill:none;stroke-width:9;stroke-linecap:round}
+.ctl{margin-top:12px;display:grid;gap:8px}
+label{display:grid;grid-template-columns:120px 1fr 56px;align-items:center;gap:8px;font-size:13px}
+input[type=range]{width:100%;accent-color:var(--inf)}
+.btns{display:flex;flex-wrap:wrap;gap:6px}
+button{font:inherit;padding:7px 12px;border:1.5px solid var(--ink);background:var(--panel);color:var(--ink);border-radius:4px;cursor:pointer}
+button:hover{background:var(--ink);color:var(--bg)}button:focus-visible,input:focus-visible{outline:3px solid var(--inf);outline-offset:2px}
+button.on{background:var(--bad);border-color:var(--bad);color:#fff}
+button.p{background:var(--ink);color:var(--bg)}
+#chips{display:flex;flex-wrap:wrap;gap:6px;min-height:28px}
+.chip{padding:3px 10px;border-radius:4px;color:#fff;font-weight:500;font-size:12px;background:var(--warn)}.chip.crit{background:var(--bad)}
+#log{max-height:170px;overflow:auto;font-size:12px;margin:0;padding:0;list-style:none}
+#log li{padding:3px 0;border-bottom:1px solid var(--line)}#log .crit{color:var(--bad)}#log .warn{color:var(--warn)}#log .ok{color:var(--ok)}
+.wide{grid-column:1/-1}
+@media(prefers-reduced-motion:reduce){.fl{animation:none}}
+</style></head><body>
+<header><h1>Retrofit smart irrigation: solar, GSM, stall-protected valve actuator</h1><span id="sys" class="pill">SYSTEM OK</span></header>
+<main>
+<div>
+<section class="card"><h2>Live system schematic (existing pipeline retained)</h2>
+<svg viewBox="0 0 900 455" role="img" aria-label="System schematic with power, information and mechanical flows">
+<rect class="enc" x="285" y="22" width="425" height="305" rx="8"/><text class="s" x="295" y="38">IP67 enclosure</text>
+<!-- power -->
+<rect class="blk" x="20" y="50" width="110" height="56"/><text x="75" y="72" text-anchor="middle">Solar panel</text><text id="tSol" class="s" x="75" y="90" text-anchor="middle">60 W</text>
+<rect class="blk" x="160" y="50" width="110" height="56"/><text x="215" y="72" text-anchor="middle">Charge controller</text><text id="tChg" class="s" x="215" y="90" text-anchor="middle">MPPT charging</text>
+<rect class="blk" x="310" y="46" width="120" height="34"/><text x="370" y="59" text-anchor="middle">LiFePO4 battery</text><text id="tBat" class="s" x="370" y="73" text-anchor="middle">12.9 V</text>
+<rect class="blk" x="310" y="88" width="120" height="30"/><text x="370" y="101" text-anchor="middle">Supercapacitor</text><text id="tCap" class="s" x="370" y="113" text-anchor="middle">100 %</text>
+<rect class="blk" x="470" y="50" width="100" height="56"/><text x="520" y="72" text-anchor="middle">DC-DC</text><text class="s" x="520" y="90" text-anchor="middle">12 V → 5 V / 3.3 V</text>
+<path id="p1" class="fl pw" d="M130,78H160"/><path id="p2" class="fl pw" d="M270,78H290V63H310"/><path id="p2b" class="fl pw" d="M290,78V103H310"/>
+<path id="p3" class="fl pw" d="M430,63H450V70H470"/><path id="p3b" class="fl pw" d="M430,103H450V90H470"/>
+<path id="p4" class="fl pw" d="M520,106V160"/><path id="p5" class="fl pw" d="M570,92H580V292H550"/>
+<!-- info -->
+<rect class="blk" x="20" y="150" width="120" height="50"/><text x="80" y="171" text-anchor="middle">Capacitive soil sensor</text><text id="tSoil" class="s" x="80" y="187" text-anchor="middle">38 %</text>
+<rect class="blk" x="20" y="220" width="120" height="50"/><text x="80" y="241" text-anchor="middle">GPS module</text><text class="s" x="80" y="257" text-anchor="middle">Fix: 8 satellites</text>
+<rect class="blk" x="400" y="160" width="150" height="80"/><text x="475" y="185" text-anchor="middle" style="font-weight:600;font-size:13px">ESP32 controller</text><text id="tEsp" class="s" x="475" y="203" text-anchor="middle">AUTO mode</text><text class="s" x="475" y="218" text-anchor="middle">logic, stall guard, telemetry</text>
+<rect class="blk" x="590" y="175" width="100" height="50"/><text x="640" y="196" text-anchor="middle">GSM module</text><text id="tGsm" class="s" x="640" y="212" text-anchor="middle">LTE connected</text>
+<rect class="blk" x="760" y="165" width="120" height="70" rx="10"/><text x="820" y="196" text-anchor="middle">Cloud dashboard</text><text id="tCloud" class="s" x="820" y="212" text-anchor="middle">live</text>
+<path id="i1" class="fl inf" d="M140,175H400"/><path id="i2" class="fl inf" d="M140,245H300V215H400"/>
+<path id="i3" class="fl inf" d="M550,200H590"/><path id="i4" class="fl inf" d="M690,200H760"/><path id="i5" class="fl inf" d="M430,240V270"/>
+<!-- driver -->
+<rect class="blk" x="400" y="270" width="150" height="44"/><text x="475" y="289" text-anchor="middle">Opto + MOSFET driver</text><text id="tCur" class="s" x="475" y="305" text-anchor="middle">I = 0.05 A</text>
+<path id="p6" class="fl pw" d="M490,314V350"/>
+<!-- mechanical -->
+<rect class="blk" x="400" y="350" width="130" height="52"/><text x="465" y="368" text-anchor="middle">High-torque servo</text><text id="tSrv" class="s" x="465" y="383" text-anchor="middle">idle</text>
+<line id="arm" x1="465" y1="392" x2="505" y2="392" stroke="var(--ink)" stroke-width="4" style="transform-origin:465px 392px"/>
+<rect class="blk" x="580" y="355" width="110" height="40"/><text x="635" y="373" text-anchor="middle">Retrofit coupling</text><text class="s" x="635" y="387" text-anchor="middle">clamp-on, no cutting</text>
+<path id="m1" class="fl mech" d="M530,375H580"/><path id="m2" class="fl mech" d="M690,375H720V395"/>
+<!-- valve & pipe -->
+<rect x="20" y="418" width="860" height="22" fill="none" stroke="var(--ink)" stroke-width="1.5"/>
+<line id="wf" class="fl wt" x1="30" y1="429" x2="870" y2="429"/>
+<rect class="blk" x="690" y="395" width="60" height="45"/><rect id="gate" x="700" y="396" width="40" height="44" fill="var(--ink)"/>
+<text id="tValve" x="775" y="420" class="s">Field valve CLOSED</text><text class="s" x="22" y="452">Existing irrigation pipeline, unchanged</text>
+<text class="s" x="22" y="30">Water in →</text>
+</svg>
+<div class="legend"><span><i style="background:var(--pw)"></i>Power</span><span><i style="background:var(--inf)"></i>Information</span><span><i style="background:var(--mech)"></i>Mechanical</span><span><i style="background:var(--water)"></i>Water</span></div>
+</section>
+<section class="card" style="margin-top:16px"><h2>Active alerts</h2><div id="chips"></div><h2 style="margin-top:12px">Event log</h2><ul id="log"></ul></section>
+</div>
+<aside>
+<section class="card"><h2>Dashboard</h2>
+<div class="grid">
+<div class="kv wide"><svg viewBox="0 0 300 100" aria-label="Gauges"><path class="g" d="M20,90A50,50 0 0 1 120,90"/><path id="gm" class="gv" stroke="var(--mech)" d="M20,90A50,50 0 0 1 120,90" stroke-dasharray="157" stroke-dashoffset="157"/><path class="g" d="M180,90A50,50 0 0 1 280,90"/><path id="gb" class="gv" stroke="var(--pw)" d="M180,90A50,50 0 0 1 280,90" stroke-dasharray="157" stroke-dashoffset="157"/><text x="70" y="82" text-anchor="middle" id="gmt" style="font-size:18px;font-weight:600">0%</text><text x="230" y="82" text-anchor="middle" id="gbt" style="font-size:18px;font-weight:600">0 V</text><text class="s" x="70" y="99" text-anchor="middle">Soil moisture</text><text class="s" x="230" y="99" text-anchor="middle">Battery voltage</text></svg></div>
+<div class="kv"><span>Valve status</span><b id="dValve">CLOSED</b><div class="bar"><div id="bValve" style="width:0"></div></div></div>
+<div class="kv"><span>Irrigation status</span><b id="dIrr">Idle</b></div>
+<div class="kv"><span>Solar charging</span><b id="dSol">0 W</b></div>
+<div class="kv"><span>GSM status</span><b id="dGsm">Online</b></div>
+<div class="kv"><span>GPS location</span><b style="font-size:15px">11.00 N, 77.00 E</b></div>
+<div class="kv"><span>System status</span><b id="dSys">OK</b></div>
+</div></section>
+<section class="card" style="margin-top:16px"><h2>Controls</h2>
+<div class="ctl">
+<label>Soil moisture<input id="cM" type="range" min="0" max="100" value="38"><output id="oM">38%</output></label>
+<label>Battery voltage<input id="cB" type="range" min="10" max="14.4" step="0.1" value="12.9"><output id="oB">12.9 V</output></label>
+<label>Solar power<input id="cS" type="range" min="0" max="100" value="60"><output id="oS">60 W</output></label>
+<label>Open below<input id="cL" type="range" min="10" max="60" value="35"><output id="oL">35%</output></label>
+<label>Close at<input id="cT" type="range" min="50" max="95" value="70"><output id="oT">70%</output></label>
+<div class="btns"><button id="bOpen" class="p">Open valve</button><button id="bClose" class="p">Close valve</button><button id="bAuto">Auto mode</button></div>
+<div class="btns"><button id="bGsm">Cut GSM link</button><button id="bStall">Inject stall</button><button id="bFlow">Block pipe flow</button><button id="bReset">Reset faults</button></div>
+</div></section>
+</aside></main>
+<script>
+const $=id=>document.getElementById(id);
+const S={m:38,b:12.9,sol:60,gsm:true,low:35,tgt:70,mode:'auto',pos:0,tp:0,jam:false,stallT:0,stall:false,nofl:false,noflF:false,openT:0,m0:0,cap:100,cur:.05,q:0,tel:0,t:0,fl:{}};
+function stamp(){const s=Math.floor(S.t);return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
+function log(sev,msg){const li=document.createElement('li');li.className=sev;li.textContent=stamp()+'  '+msg;$('log').prepend(li);while($('log').children.length>60)$('log').lastChild.remove()}
+function raise(k,sev,msg){if(!S.fl[k]){S.fl[k]={sev,msg};log(sev,msg)}}
+function clr(k,msg){if(S.fl[k]){delete S.fl[k];log('ok',msg)}}
+function cmd(open){
+ if(!S.gsm){log('warn','Remote command rejected: no GSM link');return}
+ if(S.stall||S.noflF){log('warn','Command rejected: reset latched fault first');return}
+ if(open&&S.b<11.5){log('warn','Open blocked: battery too low for actuation');return}
+ S.mode='manual';S.tp=open?100:0;S.openT=0;S.m0=S.m;log('ok','Manual '+(open?'OPEN':'CLOSE')+' command sent via GSM')}
+function tick(){
+ const dt=.2;S.t+=dt;
+ const low=S.b<11.5,chg=S.sol>3&&S.b<14.4;
+ if(low)raise('batt','warn','Low battery (<11.5 V): new valve opening inhibited');else if(S.b>11.8)clr('batt','Battery recovered');
+ if(S.mode==='auto'&&!S.stall&&!S.noflF){
+  if(S.m<S.low&&S.tp===0&&!low){S.tp=100;S.openT=0;S.m0=S.m;log('ok','Moisture below '+S.low+'%: valve OPEN')}
+  else if(S.m>=S.tgt&&S.tp>0){S.tp=0;log('ok','Target '+S.tgt+'% reached: valve CLOSE')}}
+ if(S.m>=98&&S.tp>0){S.tp=0;raise('over','crit','Abnormal irrigation: moisture ≥98%, valve force-closed')}else if(S.m<90)clr('over','Over-irrigation cleared');
+ let moving=false;
+ if(!S.stall&&Math.abs(S.pos-S.tp)>.1){moving=true;const dir=Math.sign(S.tp-S.pos);
+  if(S.jam&&dir>0&&S.pos>=30){S.cur=6.2;S.stallT+=dt;if(S.stallT>.8){S.stall=true;S.tp=S.pos;moving=false;S.cur=.05;raise('stall','crit','Actuator stall: 6.2 A over 4 A limit, MOSFET drive cut')}}
+  else{S.pos+=dir*Math.min(25*dt,Math.abs(S.tp-S.pos));S.stallT=0;S.cur=1.4}}
+ else{S.cur=.05;S.stallT=0}
+ const flow=S.pos>20&&!S.nofl;
+ S.m=Math.min(100,Math.max(0,S.m+(flow?1.6*S.pos/100*dt:-.07*dt)));
+ if(S.tp>0&&S.pos>=99&&!S.noflF){S.openT+=dt;if(S.openT>12&&S.m-S.m0<1.5){S.noflF=true;S.tp=0;raise('flow','crit','Abnormal irrigation: valve open, no moisture rise (pipe blocked?). Valve closed')}}
+ const load=2+(moving?18:0);
+ S.b=Math.min(14.4,Math.max(10,S.b+((chg?S.sol*.9:0)-load)*.0006*dt));
+ S.cap+=((moving?78:100)-S.cap)*.1;
+ if(!S.gsm){S.tel+=dt;if(S.tel>2){S.tel=0;S.q++}}
+ render(moving,flow,chg);
+}
+function render(moving,flow,chg){
+ const crit=Object.values(S.fl).some(f=>f.sev==='crit'),warn=Object.keys(S.fl).length>0||!S.gsm;
+ const st=crit?'FAULT':warn?'WARNING':'OK';
+ $('sys').textContent='SYSTEM '+st;$('sys').className='pill '+(crit?'crit':warn?'warn':'');$('dSys').textContent=st;
+ $('chips').innerHTML=Object.values(S.fl).map(f=>`<span class="chip ${f.sev}">${f.msg}</span>`).join('')+(S.gsm?'':'<span class="chip">GSM lost: running autonomously, '+S.q+' reports queued</span>');
+ const vs=S.pos<1?'CLOSED':S.pos>99?'OPEN':moving?'MOVING':'PARTIAL '+Math.round(S.pos)+'%';
+ $('dValve').textContent=vs;$('bValve').style.width=S.pos+'%';
+ $('dIrr').textContent=S.nofl&&S.pos>20?'No flow':flow?'Irrigating':'Idle';
+ $('dSol').textContent=chg?S.sol.toFixed(0)+' W charging':'Not charging';
+ $('dGsm').textContent=S.gsm?'Online':'Offline';
+ $('tSol').textContent=S.sol.toFixed(0)+' W';$('tChg').textContent=chg?'charging':S.b>=14.4?'float / full':'no input';
+ $('tBat').textContent=S.b.toFixed(1)+' V';$('tCap').textContent=Math.round(S.cap)+' %';
+ $('tSoil').textContent=S.m.toFixed(0)+' %';$('tEsp').textContent=(S.mode==='auto'?'AUTO':'MANUAL')+' mode'+(S.stall?' · FAULT':'');
+ $('tGsm').textContent=S.gsm?'LTE connected':'No signal';$('tCloud').textContent=S.gsm?'live':'stale data';
+ $('tCur').textContent='I = '+S.cur.toFixed(2)+' A'+(S.cur>4?' STALL':'');
+ $('tSrv').textContent=S.stall?'STALLED':moving?'driving':'holding';
+ $('arm').style.transform='rotate('+(-S.pos*.9)+'deg)';
+ $('gate').setAttribute('y',396-S.pos*.42);$('tValve').textContent='Field valve '+vs;
+ $('gm').style.strokeDashoffset=157*(1-S.m/100);$('gmt').textContent=S.m.toFixed(0)+'%';
+ $('gb').style.strokeDashoffset=157*(1-(S.b-10)/4.4);$('gbt').textContent=S.b.toFixed(1)+' V';
+ $('cM').value=S.m;$('oM').textContent=S.m.toFixed(0)+'%';$('cB').value=S.b;$('oB').textContent=S.b.toFixed(1)+' V';
+ const on=(ids,v)=>ids.forEach(i=>$(i).classList.toggle('off',!v));
+ on(['p1','p2','p2b'],chg);on(['p3','p3b','p4'],S.b>10.2);on(['p5','p6'],moving);
+ on(['i1','i2','i5'],true);on(['i3','i4'],S.gsm);on(['m1','m2'],moving);on(['wf'],flow);
+ $('bGsm').classList.toggle('on',!S.gsm);$('bStall').classList.toggle('on',S.jam);$('bFlow').classList.toggle('on',S.nofl);
+ $('bAuto').classList.toggle('on',false);
+}
+const bind=(id,k,out,f)=>$(id).addEventListener('input',e=>{S[k]=+e.target.value;$(out).textContent=f(S[k])});
+bind('cM','m','oM',v=>v.toFixed(0)+'%');bind('cB','b','oB',v=>v.toFixed(1)+' V');bind('cS','sol','oS',v=>v+' W');bind('cL','low','oL',v=>v+'%');bind('cT','tgt','oT',v=>v+'%');
+$('bOpen').onclick=()=>cmd(true);$('bClose').onclick=()=>cmd(false);
+$('bAuto').onclick=()=>{S.mode='auto';log('ok','Automatic control resumed')};
+$('bGsm').onclick=()=>{S.gsm=!S.gsm;if(S.gsm){log('ok','GSM restored: '+S.q+' queued reports synced');S.q=0}else log('warn','GSM link lost: controller continues autonomously')};
+$('bStall').onclick=()=>{S.jam=!S.jam;log('warn',S.jam?'Fault injected: valve will jam when opening':'Jam removed')};
+$('bFlow').onclick=()=>{S.nofl=!S.nofl;log('warn',S.nofl?'Fault injected: pipe blocked, no water reaches soil':'Pipe flow restored')};
+$('bReset').onclick=()=>{S.jam=false;S.nofl=false;S.stall=false;S.noflF=false;S.stallT=0;S.fl={};S.tp=0;log('ok','Faults reset, valve returning to CLOSED')};
+log('ok','System boot: ESP32 online, GPS fix, GSM attached');
+setInterval(tick,200);tick();
+</script></body></html>
