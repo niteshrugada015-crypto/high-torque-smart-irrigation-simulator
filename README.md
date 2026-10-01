@@ -1,61 +1,47 @@
-# High-Torque Smart Irrigation Simulator
+## 🚀 Live Simulator
 
-An interactive engineering simulator for a **High-Torque Industrial Retrofit Smart Irrigation System** designed for remote monitoring, automatic irrigation control, and retrofit installation on existing agricultural irrigation infrastructure.
+### 🌐 Try the Simulator
 
-## 🌱 Project Overview
+The complete interactive simulator is available online:
 
-The system is designed for farms where replacing the existing irrigation pipeline is expensive or impractical. A **high-torque servo actuator** is installed on the existing field valve using a retrofit coupling.
+👉 **[Launch Live Smart Irrigation Simulator](https://niteshrugada015-crypto.github.io/high-torque-smart-irrigation-simulator/)**
 
-The system continuously monitors soil moisture, valve status, power conditions, and communication status. Based on soil-moisture conditions, the controller can automatically open or close the irrigation valve.
+The simulator provides a real-time demonstration of the proposed **High-Torque Industrial Retrofit Smart Irrigation System**.
 
-The simulator demonstrates the complete operation of the proposed system, including **automatic irrigation, remote monitoring, solar power management, actuator protection, and fault detection**.
+### 🎛️ Simulator Features
 
----
+- 🌱 Real-time soil-moisture simulation
+- 🔋 Battery-voltage monitoring
+- ☀️ Solar-power simulation
+- ⚙️ Remote valve OPEN/CLOSE control
+- 🤖 Automatic irrigation mode
+- 📡 GSM communication status
+- 📍 GPS location monitoring
+- 🛡️ Actuator stall fault simulation
+- 🚧 Pipe-flow blockage simulation
+- 🚨 Fault and alert monitoring
+- 📋 Real-time event log
+- 📊 Live system dashboard
 
-## 🎯 Objectives
+### 🔧 Available Controls
 
-- Automate irrigation using soil-moisture feedback.
-- Retrofit existing irrigation valves without replacing the pipeline.
-- Enable remote monitoring and valve control.
-- Use solar energy for off-grid operation.
-- Detect actuator stall and abnormal operating conditions.
-- Monitor battery and power conditions.
-- Provide real-time system status through a dashboard.
-- Demonstrate the complete power, mechanical, and information flow.
-
----
-
-## ⚙️ Main Components
-
-| Component | Function |
+| Control | Function |
 |---|---|
-| ESP32 Controller | Central processing and control |
-| High-Torque Servo | Opens and closes the existing valve |
-| Capacitive Soil-Moisture Sensor | Measures soil moisture |
-| GSM Module | Remote communication |
-| GPS Module | Location and timestamp information |
-| MOSFET + Optocoupler | Electrical protection and switching |
-| Stall Detection | Detects actuator overload/stalling |
-| Solar Panel | Generates electrical power |
-| Solar Charge Controller | Manages solar charging |
-| LiFePO4 Battery | Stores electrical energy |
-| Supercapacitor | Provides short-duration energy buffering |
-| DC-DC Converter | Provides regulated voltage |
-| IP67 Enclosure | Protects electronics from environmental conditions |
+| Soil Moisture | Simulates current soil moisture |
+| Battery Voltage | Simulates battery condition |
+| Solar Power | Simulates available solar power |
+| Open Below | Sets the moisture level below which irrigation starts |
+| Close At | Sets the moisture level at which irrigation stops |
+| Open Valve | Manually opens the irrigation valve |
+| Close Valve | Manually closes the irrigation valve |
+| Auto Mode | Enables automatic moisture-based irrigation |
+| Cut GSM Link | Simulates communication failure |
+| Inject Stall | Simulates actuator stall |
+| Block Pipe Flow | Simulates blocked irrigation flow |
+| Reset Faults | Clears simulated faults |
 
----
+### 🔗 Live System
 
-## 🔄 System Architecture
+**[▶ Launch the Live Simulator](https://niteshrugada015-crypto.github.io/high-torque-smart-irrigation-simulator/)**
 
-### Power Flow
-
-```text
-Solar Panel
-     ↓
-Solar Charge Controller
-     ↓
-LiFePO4 Battery + Supercapacitor
-     ↓
-DC-DC Voltage Regulation
-     ↓
-ESP32 Controller + Sensors + Servo Actuator
+> The simulator demonstrates the control logic and system behavior of the proposed retrofit irrigation system. It is intended as an engineering prototype and does not directly control physical irrigation hardware.
